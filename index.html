@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Absensi SMKN 1 Kota Serang</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    header {
+      background: #2563eb;
+      color: white;
+      text-align: center;
+      padding: 25px 15px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      font-size: 14px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 25px auto;
+      padding: 0 15px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #2563eb;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #2563eb;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    #alasanBox {
+      display: none;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      padding: 13px;
+      margin-top: 20px;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .hapus-semua {
+      background: #dc2626;
+      margin-bottom: 15px;
+    }
+
+    .hapus-semua:hover {
+      background: #b91c1c;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: center;
+    }
+
+    th {
+      background: #2563eb;
+      color: white;
+    }
+
+    .hadir {
+      color: #16a34a;
+      font-weight: bold;
+    }
+
+    .tidak-hadir {
+      color: #dc2626;
+      font-weight: bold;
+    }
+
+    .btn-hapus {
+      background: #dc2626;
+      padding: 7px 10px;
+      margin: 0;
+      width: auto;
+      font-size: 13px;
+    }
+
+    .kosong {
+      text-align: center;
+      padding: 20px;
+      color: #64748b;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 20px;
+      }
+
+      .card {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>SMKN 1 KOTA SERANG</h1>
+    <p>ABSENSI ONLINE</p>
+  </header>
+
+  <div class="container">
+
+    <div class="card">
+      <h2>Isi Absensi</h2>
+
+      <label for="nama">Nama</label>
+      <input type="text" id="nama" placeholder="Masukkan nama">
+
+      <label for="nomor">Nomor Absen</label>
+      <input type="number" id="nomor" min="1" max="36" placeholder="Masukkan nomor absen">
+
+      <label for="status">Status</label>
+      <select id="status">
+        <option value="">-- Pilih Status --</option>
+        <option value="HADIR">HADIR</option>
+        <option value="TIDAK HADIR">TIDAK HADIR</option>
+      </select>
+
+      <div id="alasanBox">
+        <label for="alasan">Alasan Tidak Hadir</label>
+        <textarea id="alasan" placeholder="Masukkan alasan tidak hadir"></textarea>
+      </div>
+
+      <button onclick="simpanAbsensi()">Simpan Absensi</button>
+    </div>
+
+    <div class="card">
+      <h2>Data Absensi</h2>
+
+      <button class="hapus-semua" onclick="hapusSemua()">
+        Hapus Semua Data
+      </button>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama</th>
+              <th>Absen</th>
+              <th>Status</th>
+              <th>Alasan</th>
+              <th>Waktu</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+
+          <tbody id="dataAbsensi"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const status = document.getElementById("status");
+    const alasanBox = document.getElementById("alasanBox");
+
+    status.addEventListener("change", function() {
+      if (this.value === "TIDAK HADIR") {
+        alasanBox.style.display = "block";
+      } else {
+        alasanBox.style.display = "none";
+        document.getElementById("alasan").value = "";
+      }
+    });
+
+    function simpanAbsensi() {
+      const nama = document.getElementById("nama").value.trim();
+      const nomor = document.getElementById("nomor").value;
+      const statusValue = document.getElementById("status").value;
+      const alasan = document.getElementById("alasan").value.trim();
+
+      if (nama === "") {
+        alert("Nama harus diisi!");
+        return;
+      }
+
+      if (nomor === "") {
+        alert("Nomor absen harus diisi!");
+        return;
+      }
+
+      if (statusValue === "") {
+        alert("Silakan pilih status!");
+        return;
+      }
+
+      if (statusValue === "TIDAK HADIR" && alasan === "") {
+        alert("Alasan tidak hadir harus diisi!");
+        return;
+      }
+
+      let data = JSON.parse(localStorage.getItem("absensiSMKN1")) || [];
+
+      const sudahAda = data.some(item => item.nomor == nomor);
+
+      if (sudahAda) {
+        alert("Nomor absen tersebut sudah melakukan absensi!");
+        return;
+      }
+
+      const waktu = new Date().toLocaleString("id-ID");
+
+      data.push({
+        nama: nama,
+        nomor: nomor,
+        status: statusValue,
+        alasan: statusValue === "TIDAK HADIR" ? alasan : "-",
+        waktu: waktu
+      });
+
+      localStorage.setItem("absensiSMKN1", JSON.stringify(data));
+
+      tampilkanData();
+
+      document.getElementById("nama").value = "";
+      document.getElementById("nomor").value = "";
+      document.getElementById("status").value = "";
+      document.getElementById("alasan").value = "";
+      alasanBox.style.display = "none";
+
+      alert("Absensi berhasil disimpan!");
+    }
+
+    function tampilkanData() {
+      const tbody = document.getElementById("dataAbsensi");
+      const data = JSON.parse(localStorage.getItem("absensiSMKN1")) || [];
+
+      tbody.innerHTML = "";
+
+      if (data.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="kosong">
+              Belum ada data absensi
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      data.forEach((item, index) => {
+        const warnaStatus =
+          item.status === "HADIR" ? "hadir" : "tidak-hadir";
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${item.nama}</td>
+            <td>${item.nomor}</td>
+            <td class="${warnaStatus}">${item.status}</td>
+            <td>${item.alasan}</td>
+            <td>${item.waktu}</td>
+            <td>
+              <button class="btn-hapus" onclick="hapusAbsen(${index})">
+                Hapus
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function hapusAbsen(index) {
+      if (!confirm("Yakin ingin menghapus absensi ini?")) {
+        return;
+      }
+
+      let data = JSON.parse(localStorage.getItem("absensiSMKN1")) || [];
+
+      data.splice(index, 1);
+
+      localStorage.setItem("absensiSMKN1", JSON.stringify(data));
+
+      tampilkanData();
+    }
+
+    function hapusSemua() {
+      if (!confirm("Yakin ingin menghapus SEMUA data absensi?")) {
+        return;
+      }
+
+      localStorage.removeItem("absensiSMKN1");
+
+      tampilkanData();
+    }
+
+    tampilkanData();
+  </script>
+
+</body>
+</html>
